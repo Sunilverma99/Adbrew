@@ -1,68 +1,215 @@
-# NOTE: DO NOT FORK THIS REPOSITORY. CLONE AND SETUP A STANDALONE REPOSITORY.
+# TODO Application
 
-# Adbrew Test!
+A full-stack TODO application built with React, Django, and MongoDB, containerized with Docker.
 
-Hello! This test is designed to specifically test your Python, React and web development skills. The task is unconventional and has a slightly contrived setup on purpose and requires you to learn basic concepts of Docker on the fly. 
+## Project Overview
 
+This application provides a complete TODO management system with:
+- **Frontend**: React application with hooks-based state management
+- **Backend**: Django REST API
+- **Database**: MongoDB for data persistence
+- **Containerization**: Docker Compose for easy deployment
 
-# Structure
+## Project Structure
 
-This repository includes code for a Docker setup with 3 containers:
-* App: This is the React dev server and runs on http://localhost:3000. The code for this resides in src/app directory.
-* API: This is the backend container that run a Django instance on http://localhost:8000. 
-* Mongo: This is a DB instance running on port 27017. Django views already have code written to connect to this instance of Mongo.
-
-We highly recommend you go through the setup in `Dockerfile` and `docker-compose.yml`. If you are able to understand and explain the setup, that will be a huge differentiator.
-
-# Setup
-1. Clone this repository (DO NOT FORK)
 ```
-git clone https://github.com/adbrew/test.git
+.
+├── docker-compose.yml      # Docker Compose configuration
+├── Dockerfile              # Multi-stage Docker image with Python and Node.js
+├── .gitignore              # Git ignore rules for the project
+├── src/
+│   ├── app/                # React frontend application
+│   │   ├── src/
+│   │   │   ├── App.js      # Main React component
+│   │   │   ├── services/   # API service layer
+│   │   │   └── components/ # Reusable React components
+│   │   └── package.json    # Node.js dependencies
+│   ├── rest/               # Django backend application
+│   │   ├── manage.py       # Django management script
+│   │   └── rest/           # Django project settings
+│   ├── requirements.txt    # Python dependencies
+│   └── db/                 # MongoDB data directory (gitignored)
 ```
-2. Change into the cloned directory and set the environment variable for the code path. Replace `path_to_repository` appropriately.
+
+## Architecture
+
+The application consists of 3 Docker containers:
+
+1. **App Container** (`app`): React development server running on `http://localhost:3000`
+   - Code location: `src/app/`
+   - Uses React Hooks for state management
+   - Communicates with Django API via REST endpoints
+
+2. **API Container** (`api`): Django REST API server running on `http://localhost:8000`
+   - Code location: `src/rest/`
+   - Provides REST endpoints for TODO CRUD operations
+   - Connects to MongoDB for data persistence
+
+3. **Mongo Container** (`mongo`): MongoDB database instance running on port `27017`
+   - Uses MongoDB 6.0 image
+   - Data persisted in `src/db/` directory
+
+## Prerequisites
+
+- Docker and Docker Compose installed
+- Git (for cloning the repository)
+
+## Setup Instructions
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd Assignment
 ```
-export ADBREW_CODEBASE_PATH="{path_to_repository}/test/src"
+
+### 2. Set Environment Variable
+
+Set the `ADBREW_CODEBASE_PATH` environment variable to point to your project's `src` directory:
+
+```bash
+export ADBREW_CODEBASE_PATH="$(pwd)/src"
 ```
-3. Build container (you only need to build containers for the first time or if you change image definition, i.e., `Dockerfile`). This step will take a good amount of time.
-```
+
+**Note**: Replace `$(pwd)/src` with the absolute path to the `src` directory if needed.
+
+### 3. Build Docker Containers
+
+Build the Docker images (this may take several minutes on first run):
+
+```bash
 docker-compose build
 ```
-4. Once the build is completed, start the containers:
-```
+
+### 4. Start the Application
+
+Start all containers in detached mode:
+
+```bash
 docker-compose up -d
 ```
-5. Once complete, `docker ps` should output something like this:
+
+### 5. Verify Containers are Running
+
+Check that all containers are up and running:
+
+```bash
+docker ps
 ```
-CONTAINER ID   IMAGE               COMMAND                  CREATED         STATUS         PORTS                      NAMES
-e445be7efa61   adbrew_test_api     "bash -c 'cd /src/re…"   3 minutes ago   Up 2 seconds   0.0.0.0:8000->8000/tcp     api
-0fd203f12d8a   adbrew_test_app     "bash -c 'cd /src/ap…"   4 minutes ago   Up 3 minutes   0.0.0.0:3000->3000/tcp     app
-884cb9296791   adbrew_test_mongo   "/usr/bin/mongod --b…"   4 minutes ago   Up 3 minutes   0.0.0.0:27017->27017/tcp   mongo
+
+You should see three containers:
+- `api` - Django backend
+- `app` - React frontend
+- `mongo` - MongoDB database
+
+### 6. Access the Application
+
+- **Frontend**: Open [http://localhost:3000](http://localhost:3000) in your browser
+- **Backend API**: Access [http://localhost:8000/todos](http://localhost:8000/todos) for the API endpoint
+
+**Note**: The `app` container may take a few minutes to start as it installs all npm dependencies.
+
+## API Endpoints
+
+- `GET /todos` - Retrieve all todos
+- `POST /todos` - Create a new todo
+- `PUT /todos/<id>` - Update a todo
+- `DELETE /todos/<id>` - Delete a todo
+
+## Development
+
+### View Container Logs
+
+View logs for a specific container:
+
+```bash
+docker logs -f --tail=100 <container_name>
 ```
-6. Check that you are able to access http://localhost:3000 and http://localhost:8000/todos
-7. If the containers in #5 or #6 are not up, we would like you to use your debugging skills to figure out the issue. Only reach out to us if you've exhausted all possible options. The `app` container may take a good amount of time to start since it will download all package dependencies.
 
-# Tips
-1. Once containers are up and running, you can view container logs by executing `docker logs -f --tail=100 {container_name}` Replace `container_name` with `app` or `api`(output of `docker ps`)
-2. You can enter the container and inspect it by executing `docker exec -it {container_name} bash` Replace `{container_name}` with `app` or `api` (output of `docker ps`)
-3. Shut all containers using `docker-compose down`
-4. Restart a container using `docker restart {container_name}`
+Replace `<container_name>` with `app`, `api`, or `mongo`.
 
+### Access Container Shell
 
-# Task
+Enter a container to inspect or debug:
 
-When you run `localhost:3000`, you would see 2 things:
-1. A form with a TODO description textbox and a submit button. On this form submission, the app should interact with the Django backend (`POST http://localhost:8000/todos`) and create a TODO in MongoDB.
-2. A list with hardcoded TODOs. This should be changed to reflect TODOs in the backend (`GET http://localhost:8000/todos`). 
-3. When the form is submitted, the TODO list should refresh again and fetch latest list of TODOs from MongoDB.
+```bash
+docker exec -it <container_name> bash
+```
 
-# Instructions [IMPORTANT] 
-1. All React code should be implemented using [React hooks](https://reactjs.org/docs/hooks-intro.html) and should not use traditional stateful React components and component lifecycle method.
-2. Do not use Django's model, serializers or SQLite DB. Persist and retrieve all data from the mongo instance. A `db` instance is already present in `views.py`.
-3. Do not bypass the Docker setup. Submissions that do not have proper docker setup will be rejected.
-4. We are looking for developers who have strong fundamentals and can ramp up fast. We expect you to learn and grasp basic React Hooks/Mongo/Docker concepts on the fly.
-5. Do not fork this repository or submit your solution as a PR since this is a public repo and there are other candidates taking the same test. Send us a link to your repo privately.
-6. If you are able to complete the test, we will have a live walkthrough of your code and ask questions to check your understanding.
-7. The code for the actual solution is pretty easy. The code quality in your solution should be production-ready - error handling, abstractions, well-maintainable and modular code. If you're not aware, we recommend reading a bit about software design principles and applying them (both JS and Python). Here are some reading resources to get you started:
-   * https://kinsta.com/blog/python-object-oriented-programming/
-   * https://realpython.com/solid-principles-python/
-   * https://www.toptal.com/python/python-design-patterns
+### Restart a Container
+
+Restart a specific container:
+
+```bash
+docker restart <container_name>
+```
+
+### Stop All Containers
+
+Stop and remove all containers:
+
+```bash
+docker-compose down
+```
+
+## Features
+
+- ✅ Create new todos
+- ✅ View list of todos
+- ✅ Update existing todos
+- ✅ Delete todos
+- ✅ Real-time UI updates
+- ✅ Error handling and user feedback
+- ✅ Loading states
+
+## Technology Stack
+
+- **Frontend**: React 17.0.1, React Hooks
+- **Backend**: Django 3.0.5, Django REST Framework
+- **Database**: MongoDB 6.0
+- **Containerization**: Docker, Docker Compose
+- **Package Management**: 
+  - Python: pip
+  - Node.js: yarn
+
+## Important Notes
+
+1. **React Hooks**: All React code uses functional components with hooks (no class components)
+2. **MongoDB Only**: The backend uses MongoDB directly via pymongo - no Django models or SQLite
+3. **Docker Required**: The application must run in Docker containers
+4. **Database Files**: MongoDB data files in `src/db/` are gitignored and should not be committed
+5. **Environment Variables**: `.env` files are gitignored for security
+
+## Troubleshooting
+
+### Containers Not Starting
+
+1. Check container logs: `docker logs <container_name>`
+2. Verify environment variable is set: `echo $ADBREW_CODEBASE_PATH`
+3. Ensure ports 3000, 8000, and 27017 are not in use
+4. Try rebuilding: `docker-compose down && docker-compose build && docker-compose up -d`
+
+### Frontend Not Loading
+
+- Wait a few minutes for `yarn install` to complete in the `app` container
+- Check `app` container logs for errors
+- Verify the container is running: `docker ps`
+
+### Backend API Not Responding
+
+- Check `api` container logs
+- Verify MongoDB connection in Django settings
+- Ensure `mongo` container is running and healthy
+
+## Code Quality
+
+The codebase follows production-ready standards:
+- Error handling and validation
+- Modular and maintainable code structure
+- Separation of concerns (services, components)
+- Clean abstractions
+- Comprehensive user feedback
+
+## License
+
+This project is for educational/assignment purposes.
